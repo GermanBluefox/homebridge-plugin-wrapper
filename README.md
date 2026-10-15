@@ -73,6 +73,8 @@ The example contains code how to get and set values.
   (`@homebridge/hap-nodejs` points to the copy), version.js returns the version "static" instead of reading package.json
 * Mocked away: qrcode-terminal, the mDNS advertisers (ciao, bonjour-hap, dbus-native), tweetnacl, fast-srp-hap and the HAP HTTP server
 * In Accessory.js the MAX settings for accessories and services are increased
+* pluginManager.js searches plugins also in the paths of the main module (like Homebridge 1), so plugins installed next to
+  the application are found even if the wrapper is hoisted to another node_modules folder
 
 ## Updating Homebridge
 1. `npm run vendor -- <homebridge version>` (default: the version in `scripts/vendor.mjs`). The script installs Homebridge
@@ -94,6 +96,7 @@ The example contains code how to get and set values.
 * The copies of Homebridge and HAP-NodeJS are created by `npm run vendor` now
 * Values are read with `handleGetRequest()` (HAP-NodeJS has no `getValue(callback)` anymore)
 * Added option `customPluginPath`
+* Plugins are searched in the paths of the main module too (like with Homebridge 1)
 * Fixed: `getAccessoryByName()` and `getAccessoryByUUID()`
 * Fixed: external accessories (e.g. cameras) are reported with `addExternalAccessory`
 

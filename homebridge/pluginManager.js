@@ -40,7 +40,7 @@ var import_logger = require("./logger.js");
 var import_plugin = require("./plugin.js");
 const log = import_logger.Logger.internal;
 const require2 = (0, import_node_module.createRequire)(__importMetaUrl);
-const paths = require2.resolve.paths("");
+const paths = [...require2.main?.paths ?? [], ...require2.resolve.paths("") ?? []];
 class PluginManager {
   // name must be prefixed with 'homebridge-' or '@scope/homebridge-'
   static PLUGIN_IDENTIFIER_PATTERN = /^((@[\w-]+(\.[\w-]+)*)\/)?(homebridge-[\w-]+)$/;

@@ -39,6 +39,18 @@ const HAP_PATCHES = [
     ['lib/Accessory.js', /const MAX_SERVICES = \d+;/, 'const MAX_SERVICES = 1000000;'],
 ];
 
+/** Changes to the original Homebridge files (ESM source, before the conversion): [file, search, replacement] */
+const HOMEBRIDGE_PATCHES = [
+    // Homebridge 2 searches plugins only relative to its own location. Homebridge 1 used the paths of the main module,
+    // so plugins installed next to the application (e.g. <app>/node_modules while the wrapper is hoisted) were found.
+    // Both are used, the main module first (like Homebridge 1).
+    [
+        'pluginManager.js',
+        /const paths = require\.resolve\.paths\((['"])\1\);/,
+        "const paths = [...(require.main?.paths ?? []), ...(require.resolve.paths('') ?? [])];",
+    ],
+];
+
 /** Lines of the ESM files that do not work in CommonJS (there __filename/__dirname exist already) */
 const ESM_ONLY_LINES = [
     /^const __filename = fileURLToPath\(import\.meta\.url\);\r?\n/m,
@@ -155,8 +167,19 @@ async function copyHomebridge(homebridgeDist, homebridgePackage) {
     }
     files.delete('version.js');
 
+    for (const [file] of HOMEBRIDGE_PATCHES) {
+        if (!files.has(file)) {
+            throw new Error(`Patched file ${file} is not part of the copy anymore`);
+        }
+    }
     for (const file of files) {
-        const source = fs.readFileSync(path.join(homebridgeDist, file), 'utf8');
+        let source = fs.readFileSync(path.join(homebridgeDist, file), 'utf8');
+        for (const [patchFile, search, replacement] of HOMEBRIDGE_PATCHES.filter(([f]) => f === file)) {
+            if (!search.test(source)) {
+                throw new Error(`Patch for ${patchFile} does not match anymore: ${search}`);
+            }
+            source = source.replace(search, replacement);
+        }
         const target = path.join(HOMEBRIDGE_DIR, file);
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.writeFileSync(target, await convertToCommonJs(source, file));
@@ -174,7 +197,7 @@ async function copyHomebridge(homebridgeDist, homebridgePackage) {
     ].join('\n');
     fs.writeFileSync(path.join(HOMEBRIDGE_DIR, 'version.js'), await convertToCommonJs(versionSource, 'version.js'));
 
-    log(`homebridge: ${files.size + 1} files converted to CommonJS`);
+    log(`homebridge: ${files.size + 1} files converted to CommonJS, ${HOMEBRIDGE_PATCHES.length} patches applied`);
     return packages;
 }
 
