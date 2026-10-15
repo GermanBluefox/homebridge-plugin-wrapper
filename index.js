@@ -195,6 +195,10 @@ function HomebridgeWrapper(config) {
         }
 
         async ___getAndPollCharacteristic(accessory, service, characteristic, isUpdate) {
+            if (characteristic.props && characteristic.props.perms && !characteristic.props.perms.includes('pr')) {
+                // write-only (e.g. Identify): HAP-NodeJS rejects the read with HAPStatus.WRITE_ONLY_CHARACTERISTIC
+                return undefined;
+            }
             let value;
             try {
                 // calls the get handler of the plugin (HAP-NodeJS has no getValue(callback) anymore)

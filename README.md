@@ -94,7 +94,7 @@ The example contains code how to get and set values.
 ### **WORK IN PROGRESS**
 * BREAKING: Homebridge 2.4.0 and HAP-NodeJS 2.2.2, Node.js >= 22 required. Plugins must be compatible with Homebridge 2
 * The copies of Homebridge and HAP-NodeJS are created by `npm run vendor` now
-* Values are read with `handleGetRequest()` (HAP-NodeJS has no `getValue(callback)` anymore)
+* Values are read with `handleGetRequest()` (HAP-NodeJS has no `getValue(callback)` anymore), write-only characteristics are not read
 * Added option `customPluginPath`
 * Plugins are searched in the paths of the main module too (like with Homebridge 1)
 * Fixed: `getAccessoryByName()` and `getAccessoryByUUID()`
